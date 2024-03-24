@@ -1,0 +1,10 @@
+streamlit
+google-generativeai
+python-dotenv
+langchain
+PyPDF2
+langchain_google_genai
+sentence-transformers==2.2.2
+pinecone-client==2.2.4
+unstructured
+unstructured[local-inference]
