@@ -1,4 +1,7 @@
 import streamlit as st
+from streamlit_chat import message
+from utils import *
+
 from PyPDF2 import PdfReader
 from dotenv import load_dotenv
 
@@ -7,11 +10,16 @@ import google.generativeai as genai
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.question_answering import load_qa_chain
-from langchain.prompts import PromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.memory import ConversationBufferMemory 
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.chains import ConversationChain
 from langchain.chains import ConversationalRetrievalChain
-
+from langchain.prompts import (
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+    ChatPromptTemplate,
+    MessagesPlaceholder
+)
 
 # Parsing the uploaded documents and creating a single text blob
 def get_pdf_text(pdf_docs):
