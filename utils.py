@@ -53,21 +53,13 @@ def get_vector_store(text_chunks):
 
 index = pinecone.Index('langchain-chatbot')
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+encoder = SentenceTransformer('all-MiniLM-L6-v2')
 
 
-with st.sidebar:
-    st.title("Menu:")
-    pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
-    if st.button("Submit & Process"):
-        with st.spinner("Processing..."):
-            raw_text = get_pdf_text(pdf_docs)
-            text_chunks = get_text_chunks(raw_text)
-            get_vector_store(text_chunks)
-            st.success("Done")
+
 
 def find_match(input):
-    input_em = model.encode(input).tolist()
+    input_em = encoder.encode(input).tolist()
     result = index.query(input_em, top_k=2, includeMetadata=True)
     return result['matches'][0]['metadata']['text']+"\n"+result['matches'][1]['metadata']['text']
 

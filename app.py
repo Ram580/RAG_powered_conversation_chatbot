@@ -21,6 +21,15 @@ from langchain.prompts import (
     MessagesPlaceholder
 )
 
+with st.sidebar:
+    st.title("Menu:")
+    pdf_docs = st.file_uploader("Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
+    if st.button("Submit & Process"):
+        with st.spinner("Processing..."):
+            raw_text = get_pdf_text(pdf_docs)
+            text_chunks = get_text_chunks(raw_text)
+            get_vector_store(text_chunks)
+            st.success("Done")
 st.subheader("Chatbot with Langchain, ChatGPT, Pinecone, and Streamlit")
 
 if 'responses' not in st.session_state:
@@ -28,6 +37,7 @@ if 'responses' not in st.session_state:
 
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
+    
 
 load_dotenv()
 genai.configure(api_key=os.environ["API_KEY"])
