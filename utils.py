@@ -59,9 +59,14 @@ encoder = SentenceTransformer('all-MiniLM-L6-v2')
 
 
 def find_match(input):
-    input_em = encoder.encode(input).tolist()
-    result = index.query(input_em, top_k=2, includeMetadata=True)
-    return result['matches'][0]['metadata']['text']+"\n"+result['matches'][1]['metadata']['text']
+    # input_em = encoder.encode(input).tolist()
+    # result = index.query(input_em, top_k=2, includeMetadata=True)
+    # return result['matches'][0]['metadata']['text']+"\n"+result['matches'][1]['metadata']['text']
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+    # Pinecone search using the loaded embeddings
+    docsearch = Pinecone.from_existing_index(index_name, embeddings)
+    docs = docsearch.similarity_search(input)
 
 # def query_refiner(conversation, query):
 
@@ -76,7 +81,7 @@ def find_match(input):
 #     )
 #     return response['choices'][0]['text']
 
-genai.configure(api_key=os.environ["API_KEY"])
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 model = genai.GenerativeModel('gemini-pro')
 
 def query_refiner(conversation, query):

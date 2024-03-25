@@ -1,3 +1,4 @@
+import langchain
 import streamlit as st
 from streamlit_chat import message
 from utils import *
@@ -14,6 +15,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.chains import ConversationChain
 from langchain.chains import ConversationalRetrievalChain
+from langchain.prompts import ChatPromptTemplate
 from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
@@ -40,9 +42,11 @@ if 'requests' not in st.session_state:
     
 
 load_dotenv()
-genai.configure(api_key=os.environ["API_KEY"])
-llm = ChatGoogleGenerativeAI(model="gemini-pro",
-                            temperature=0,convert_system_message_to_human=True)
+genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+# llm = ChatGoogleGenerativeAI(model="gemini-pro",
+#                             temperature=0,convert_system_message_to_human=True)
+from langchain import HuggingFaceHub
+llm = HuggingFaceHub(huggingfacehub_api_token="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",repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1")
 
 if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
