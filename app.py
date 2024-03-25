@@ -21,49 +21,61 @@ from langchain.prompts import (
     MessagesPlaceholder
 )
 
-# Parsing the uploaded documents and creating a single text blob
-def get_pdf_text(pdf_docs):
-    text=""
-    for pdf in pdf_docs:
-        pdf_reader= PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text+= page.extract_text()
-    return  text
+st.subheader("Chatbot with Langchain, ChatGPT, Pinecone, and Streamlit")
 
-# creating chunks of the text blob
-def get_text_chunks(text):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-    chunks = text_splitter.split_text(text)
-    return chunks
+if 'responses' not in st.session_state:
+    st.session_state['responses'] = ["How can I assist you?"]
 
-# Create Embeddings using Huggingface Embeddings
-import sentence_transformers
-from langchain.embeddings import HuggingFaceEmbeddings
-embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+if 'requests' not in st.session_state:
+    st.session_state['requests'] = []
 
-
-# Load environment variables to get Pinecone API Key and env
 load_dotenv()
-# Access the value of PINECONE_API_KEY
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_API_ENV = os.getenv("PINECONE_API_ENV")
+genai.configure(api_key=os.environ["API_KEY"])
+llm = ChatGoogleGenerativeAI(model="gemini-pro",
+                            temperature=0,convert_system_message_to_human=True)
 
-# initialize pinecone
-import pinecone
-# initialize pinecone
-pinecone.init(
-    api_key=PINECONE_API_KEY,  # find at app.pinecone.io
-    environment=PINECONE_API_ENV  # next to api key in console
-)
-index_name = "rag-chatbot" # put in the name of your pinecone index here
+if 'buffer_memory' not in st.session_state:
+            st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
 
-#  Function that indexes documents into Pinecone
-from langchain.vectorstores import Pinecone
+system_msg_template = SystemMessagePromptTemplate.from_template(template="""Answer the question as truthfully as possible using the provided context, 
+and if the answer is not contained within the text below, say 'I don't know'""")
 
-# Load the data into pinecone database
-def get_vector_store(text_chunks):
-   #docsearch = Pinecone.from_texts(chunked_data, embeddings, index_name=index_name)
-   index = Pinecone.from_texts([t for t in text_chunks], embeddings, index_name=index_name)
-   return index
+
+human_msg_template = HumanMessagePromptTemplate.from_template(template="{input}")
+
+prompt_template = ChatPromptTemplate.from_messages([system_msg_template, MessagesPlaceholder(variable_name="history"), human_msg_template])
+
+conversation = ConversationChain(memory=st.session_state.buffer_memory, prompt=prompt_template, llm=llm, verbose=True)
+
+
+
+
+# container for chat history
+response_container = st.container()
+# container for text box
+textcontainer = st.container()
+
+
+with textcontainer:
+    query = st.text_input("Query: ", key="input")
+    if query:
+        with st.spinner("typing..."):
+            conversation_string = get_conversation_string()
+            # st.code(conversation_string)
+            refined_query = query_refiner(conversation_string, query)
+            st.subheader("Refined Query:")
+            st.write(refined_query)
+            context = find_match(refined_query)
+            # print(context)  
+            response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{query}")
+        st.session_state.requests.append(query)
+        st.session_state.responses.append(response) 
+with response_container:
+    if st.session_state['responses']:
+
+        for i in range(len(st.session_state['responses'])):
+            message(st.session_state['responses'][i],key=str(i))
+            if i < len(st.session_state['requests']):
+                message(st.session_state["requests"][i], is_user=True,key=str(i)+ '_user')
 
