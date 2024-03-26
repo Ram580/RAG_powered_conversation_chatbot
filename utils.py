@@ -67,6 +67,7 @@ def find_match(input):
     # Pinecone search using the loaded embeddings
     docsearch = Pinecone.from_existing_index(index_name, embeddings)
     docs = docsearch.similarity_search(input)
+    return docs
 
 # def query_refiner(conversation, query):
 
