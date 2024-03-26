@@ -43,10 +43,9 @@ if 'requests' not in st.session_state:
 
 load_dotenv()
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-# llm = ChatGoogleGenerativeAI(model="gemini-pro",
-#                             temperature=0,convert_system_message_to_human=True)
+llm = ChatGoogleGenerativeAI(model="gemini-pro",temperature=0,convert_system_message_to_human=True)
 from langchain import HuggingFaceHub
-llm = HuggingFaceHub(huggingfacehub_api_token="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",repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1")
+#llm = HuggingFaceHub(huggingfacehub_api_token="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",repo_id="mistralai/Mixtral-8x7B-Instruct-v0.1")
 
 if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
