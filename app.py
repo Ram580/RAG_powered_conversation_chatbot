@@ -32,7 +32,7 @@ with st.sidebar:
             text_chunks = get_text_chunks(raw_text)
             get_vector_store(text_chunks)
             st.success("Done")
-st.subheader("Chatbot with Langchain, ChatGPT, Pinecone, and Streamlit")
+st.subheader("Conversation Chatbot with Langchain, Gemini Pro LLM, Pinecone and Streamlit")
 
 if 'responses' not in st.session_state:
     st.session_state['responses'] = ["How can I assist you?"]
